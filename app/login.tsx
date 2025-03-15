@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../services/config"; // Adjust path if needed
+import { auth } from "../services/config"; // Adjust path if needed
 import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
@@ -17,7 +17,7 @@ export default function LoginScreen() {
   const router = useRouter(); // For navigation
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -59,7 +59,7 @@ export default function LoginScreen() {
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/(tabs)/signup")}>
+      <TouchableOpacity onPress={() => router.push("/signup")}>
         <Text style={styles.link}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
     </View>

@@ -7,34 +7,34 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { app } from "../../services/config"; // Adjust the import path if needed
-import { router } from "expo-router"; // Use router instead of navigation
+import { auth } from "../services/config"; // ✅ Use the existing instance
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from "expo-router"; // Use router instead of navigation
 
 export default function Signup() {
-  const auth = getAuth(app); // Get Firebase Auth instance
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter(); // For navigation
 
   // Handle signup
   const handleSignup = async () => {
-    if (!name || !email || !password) {
-      Alert.alert("Error", "All fields are required!");
-      return;
-    }
+  if (!name || !email.trim() || !password.trim()) {
+    Alert.alert("Error", "All fields are required!");
+    return;
+  }
 
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      Alert.alert("Success", "Account created!");
-      router.push("../../login"); // Navigate using Expo Router
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert("Signup Failed", error.message);
-      }
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
+    if (userCredential.user) {
+      router.replace("/(tabs)"); // ✅ Auto-login after signup
     }
-  };
+  } catch (error: any) {
+    Alert.alert("Signup Failed", error.message || "An unknown error occurred.");
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -66,7 +66,7 @@ export default function Signup() {
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/(tabs)/login")}>
+      <TouchableOpacity onPress={() => router.push("/login")}>
         <Text style={styles.link}>Already have an account? Log in</Text>
       </TouchableOpacity>
     </View>
