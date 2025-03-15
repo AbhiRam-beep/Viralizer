@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "466731416111",
+    "project_id": "viralizer-fd96a",
+    "storage_bucket": "viralizer-fd96a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:466731416111:android:f307decd0a05ddfa3624da",
+        "android_client_info": {
+          "package_name": "com.bmsce.viralizer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx3Y_YxtRCFIhy6V81ppH92GzGOr1mp7o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
