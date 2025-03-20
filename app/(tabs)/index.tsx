@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { signOut } from 'firebase/auth';
-import { auth } from '../../services/config'; // Adjust the path if needed
+import { auth } from '../../services/config';
 import { useRouter } from 'expo-router';
 
 export default function TabsIndex() {
@@ -9,9 +9,9 @@ export default function TabsIndex() {
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth); // Firebase sign out
+      await signOut(auth);
       Alert.alert("Signed out", "You have been signed out successfully.");
-      router.replace("/login"); // Redirect to the login page after sign-out
+      router.replace("/login");
     } catch (error) {
       Alert.alert("Error", "Failed to sign out.");
     }
@@ -20,7 +20,7 @@ export default function TabsIndex() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to the app! This is inside app/tabs</Text>
-      
+
       <TouchableOpacity onPress={handleSignOut} style={styles.button}>
         <Text style={styles.buttonText}>Log Out</Text>
       </TouchableOpacity>
