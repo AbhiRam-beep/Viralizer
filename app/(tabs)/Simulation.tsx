@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Button, TouchableOpacity, Text } from "react-native";
+import { View, Button, TouchableOpacity } from "react-native";
 
-const GRID_SIZE = 15;
-const CELL_SIZE = 20;
+const GRID_SIZE = 20;
+const CELL_SIZE = 15;
 
 export default function Simulation() {
   const [running, setRunning] = useState(false);
@@ -16,6 +16,8 @@ export default function Simulation() {
       Array(GRID_SIZE).fill(null).map(() => ({
         status: "neutral",
         population: "neutral",
+        virus: 0,
+        vaccine: 0,
       }))
     )
   );
@@ -25,13 +27,22 @@ export default function Simulation() {
 
     const cell = gridRef.current[row][col];
     if (mode === "virus") {
-      cell.status = selectedType;
+      cell.virus = 100;
+      cell.vaccine = 0;
+    } else if (mode === "vaccine") {
+      cell.virus = 0;
+      cell.vaccine = 100;
     } else if (mode === "population") {
       cell.population = selectedType;
     }
 
     forceUpdate((prev) => prev + 1);
   };
+
+
+
+
+
 
   useEffect(() => {
     if (!running) return;
@@ -41,81 +52,135 @@ export default function Simulation() {
 
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let c = 0; c < GRID_SIZE; c++) {
-          const cell = gridRef.current[r][c];
-
-          const spreadFactor = {
-            high: 1,
-            neutral: 0.5,
-            low: 0.3,
-          }[cell.population];
-
-          if (cell.status === "infected") {
-            spreadToNeighbors(newGrid, r, c, "neutral", "infected", spreadFactor);
-          }
-
-          if (cell.status === "vaccinated") {
-            spreadToNeighbors(newGrid, r, c, "neutral", "vaccinated", 0.7 * spreadFactor);
-          }
+          spreadToNeighbors(newGrid, r, c);
         }
       }
 
+      const allVaccinated = newGrid.every(row =>
+        row.every(cell => cell.vaccine === 100)
+      );
+      if (allVaccinated) {
+        setRunning(false);
+      }
+
       gridRef.current = newGrid;
-      forceUpdate((prev) => prev + 1);
-    }, 1000);
+      forceUpdate(n => n + 1);
+    }, 60);
 
     return () => clearInterval(interval);
   }, [running]);
 
-  const spreadToNeighbors = (grid, row, col, targetStatus, newStatus, chance) => {
-    const directions = [
+
+
+
+  const spreadToNeighbors = (grid, row, col) => {
+    const dirs = [
       [1, 0], [-1, 0], [0, 1], [0, -1]
     ];
 
-    directions.forEach(([dr, dc]) => {
-      const nr = row + dr, nc = col + dc;
-      if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-        const neighbor = grid[nr][nc];
-        if (neighbor.status === targetStatus && Math.random() < chance) {
-          neighbor.status = newStatus;
+    const src = grid[row][col];
+
+    const factorMap = {
+      high: 1,
+      neutral: 0.5,
+      low: 0.3
+    };
+
+    dirs.forEach(([dr, dc]) => {
+      const r = row + dr, c = col + dc;
+      if (r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE) {
+        const n = grid[r][c];
+        const pop = src.population || 'neutral';
+        const f = factorMap[pop] ?? 0.5;
+
+        if (src.virus > 0 || src.vaccine > 0) {
+          if (Math.random() < 0.1 * f) {
+            const vIn = src.virus * 0.08;
+            const vacIn = src.vaccine * 0.15;
+
+            let v = n.virus + vIn;
+            let vac = n.vaccine + vacIn;
+
+            const t = v + vac;
+            if (t > 100) {
+              const s = 100 / t;
+              v *= s;
+              vac *= s;
+            }
+
+            n.virus = v;
+            n.vaccine = vac;
+          }
         }
       }
     });
+
+    const cell = grid[row][col];
+    if (cell.vaccine > 0 && cell.virus > 0) {
+      const rate = 0.05;
+      cell.vaccine = Math.min(100, cell.vaccine + rate);
+      cell.virus = Math.max(0, cell.virus - rate * 1.5);
+    }
   };
 
+
+
   const getCellColor = (cell) => {
-    if (cell.status !== "neutral") {
-      return {
-        infected: "red",
-        vaccinated: "blue",
-      }[cell.status];
+    const { virus, vaccine, population } = cell;
+
+    if (virus > 0 || vaccine > 0) {
+      const total = virus + vaccine;
+      const redRatio = virus / total;
+      const blueRatio = vaccine / total;
+
+      const red = Math.round(255 * redRatio);
+      const green = 0;
+      const blue = Math.round(255 * blueRatio);
+
+      return `rgb(${red},${green},${blue})`;
     }
 
     return {
       high: "#ffe5b4",
       low: "#b2f0e8",
       neutral: "lightgray",
-    }[cell.population];
+    }[population];
   };
+
+
 
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <View style={{ flexDirection: "row", marginBottom: 10 }}>
-        {["virus", "population"].map((m) => (
-          <Button key={m} title={m} onPress={() => setMode(m)} />
+
+
+
+      <View style={{ flexDirection: "row", marginBottom: 20, gap: 8 }}>
+        {["virus", "vaccine", "population"].map((m) => (
+          <Button
+            key={m}
+            title={m.charAt(0).toUpperCase() + m.slice(1)}
+            onPress={() => setMode(m)}
+            color={mode === m ? "darkblue" : undefined}
+          />
         ))}
+
+        {mode === "population" && (
+          <View style={{ flexDirection: "column", gap: 8 }}>
+            {["high", "neutral", "low"].map((type) => (
+              <Button
+                key={type}
+                title={type.charAt(0).toUpperCase() + type.slice(1)}
+                onPress={() => setSelectedType(type)}
+                color={selectedType === type ? "gray" : undefined}
+              />
+            ))}
+          </View>
+        )}
       </View>
 
-      <View style={{ flexDirection: "row", marginBottom: 20 }}>
-        {mode === "virus" &&
-          ["infected", "vaccinated", "neutral"].map((type) => (
-            <Button key={type} title={type} onPress={() => setSelectedType(type)} />
-          ))}
-        {mode === "population" &&
-          ["high", "low", "neutral"].map((type) => (
-            <Button key={type} title={type} onPress={() => setSelectedType(type)} />
-          ))}
-      </View>
+
+
 
       <View style={{
         width: GRID_SIZE * CELL_SIZE,
@@ -148,7 +213,9 @@ export default function Simulation() {
           gridRef.current = Array(GRID_SIZE).fill(null).map(() =>
             Array(GRID_SIZE).fill(null).map(() => ({
               status: "neutral",
-              population: "neutral"
+              population: "neutral",
+              virus: 0,
+              vaccine: 0,
             }))
           );
           setRunning(false);
