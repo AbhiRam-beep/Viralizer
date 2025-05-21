@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth";
+import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth/react-native";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage"
@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDx3Y_YxtRCFIhy6V81ppH92GzGOr1mp7o",
   authDomain: "viralizer-fd96a.firebaseapp.com",
   projectId: "viralizer-fd96a",
-  storageBucket: "viralizer-fd96a.firebasestorage.app",
+  storageBucket: "viralizer-fd96a.appspot.com",
   messagingSenderId: "466731416111",
   appId: "1:466731416111:android:f307decd0a05ddfa3624da",
 };
