@@ -19,7 +19,18 @@ export default function TabsLayout() {
   if (isAuthenticated === null) return null;
 
   return isAuthenticated ? (
-    <Tabs>
+    
+<Tabs
+  screenOptions={{
+    headerShown: false, // 💥 Hides the top white header
+    tabBarActiveTintColor: '#2e8dfb',
+    tabBarStyle: {
+      backgroundColor: '#0f0f2d',
+      borderTopWidth: 0,
+    },
+  }}
+>
+
       <Tabs.Screen
         name="index"
         options={{

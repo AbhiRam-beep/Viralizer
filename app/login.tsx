@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  StatusBar,
 } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/config"; // Adjust path if needed
@@ -14,7 +15,7 @@ import { useRouter } from "expo-router";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter(); // For navigation
+  const router = useRouter();
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
@@ -23,24 +24,27 @@ export default function LoginScreen() {
     }
 
     try {
-  await signInWithEmailAndPassword(auth, email, password);
-  router.replace("/(tabs)"); // Redirect to main app after login
-} catch (error: unknown) {
-  if (error instanceof Error) {
-    Alert.alert("Login Failed", error.message);
-  } else {
-    Alert.alert("Login Failed", "An unknown error occurred.");
-  }
-}
+      await signInWithEmailAndPassword(auth, email, password);
+      router.replace("/(tabs)");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        Alert.alert("Login Failed", error.message);
+      } else {
+        Alert.alert("Login Failed", "An unknown error occurred.");
+      }
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <StatusBar barStyle="light-content" />
+
+      <Text style={styles.title}>🔐 Login</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Email"
+        placeholderTextColor="#aab3c5"
         keyboardType="email-address"
         autoCapitalize="none"
         value={email}
@@ -50,6 +54,7 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
+        placeholderTextColor="#aab3c5"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -66,46 +71,52 @@ export default function LoginScreen() {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#0f0f2d",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#f8f9fa",
+    padding: 24,
   },
   title: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: "bold",
-    marginBottom: 20,
+    color: "#a6e1fa",
+    marginBottom: 24,
   },
   input: {
     width: "100%",
     height: 50,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 8,
+    backgroundColor: "#1c1c3a",
+    borderRadius: 10,
     paddingHorizontal: 15,
     marginBottom: 15,
-    backgroundColor: "#fff",
+    color: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#2e8dfb",
   },
   button: {
     width: "100%",
     height: 50,
-    backgroundColor: "#007bff",
+    backgroundColor: "#2e8dfb",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 10,
+    shadowColor: "#00ffff",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
   },
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: "bold",
   },
   link: {
-    marginTop: 15,
-    color: "#007bff",
+    marginTop: 20,
+    color: "#6a5acd",
     fontSize: 16,
   },
 });

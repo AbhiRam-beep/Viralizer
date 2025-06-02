@@ -6,48 +6,57 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  StatusBar,
 } from "react-native";
-import { auth } from "../services/config"; // ✅ Use the existing instance
+import { auth } from "../services/config";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "expo-router"; // Use router instead of navigation
+import { useRouter } from "expo-router";
 
 export default function Signup() {
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter(); // For navigation
+  const router = useRouter();
 
-  // Handle signup
   const handleSignup = async () => {
-  if (!name || !email.trim() || !password.trim()) {
-    Alert.alert("Error", "All fields are required!");
-    return;
-  }
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
-    if (userCredential.user) {
-      router.replace("/(tabs)"); // ✅ Auto-login after signup
+    if (!name || !email.trim() || !password.trim()) {
+      Alert.alert("Error", "All fields are required!");
+      return;
     }
-  } catch (error: any) {
-    Alert.alert("Signup Failed", error.message || "An unknown error occurred.");
-  }
-};
 
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password.trim()
+      );
+      if (userCredential.user) {
+        router.replace("/(tabs)");
+      }
+    } catch (error: any) {
+      Alert.alert(
+        "Signup Failed",
+        error.message || "An unknown error occurred."
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+      <StatusBar barStyle="light-content" />
+
+      <Text style={styles.title}>📝 Sign Up</Text>
 
       <TextInput
         placeholder="Full Name"
+        placeholderTextColor="#aab3c5"
         style={styles.input}
         value={name}
         onChangeText={setName}
       />
       <TextInput
         placeholder="Email"
+        placeholderTextColor="#aab3c5"
         style={styles.input}
         value={email}
         onChangeText={setEmail}
@@ -56,6 +65,7 @@ export default function Signup() {
       />
       <TextInput
         placeholder="Password"
+        placeholderTextColor="#aab3c5"
         style={styles.input}
         value={password}
         onChangeText={setPassword}
@@ -73,46 +83,53 @@ export default function Signup() {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#0f0f2d",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
-    backgroundColor: "#f8f9fa",
+    padding: 24,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 20,
+    color: "#a6e1fa",
+    marginBottom: 24,
   },
   input: {
     width: "100%",
     height: 50,
-    backgroundColor: "#fff",
+    backgroundColor: "#1c1c3a",
+    borderRadius: 10,
     paddingHorizontal: 15,
-    borderRadius: 8,
     marginBottom: 15,
+    color: "#ffffff",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#2e8dfb",
   },
   button: {
     width: "100%",
     height: 50,
-    backgroundColor: "#007bff",
+    backgroundColor: "#2e8dfb",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 10,
+    shadowColor: "#00ffff",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
   },
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: "bold",
   },
   link: {
     marginTop: 20,
-    color: "#007bff",
+    color: "#6a5acd",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
