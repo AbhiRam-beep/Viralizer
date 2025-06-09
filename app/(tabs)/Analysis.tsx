@@ -14,6 +14,8 @@ const Analysis = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+const [saved, setSaved] = useState(false);
+
   useEffect(() => {
     // If simId param exists, fetch saved simulation from Firestore
     if (simId) {
@@ -40,7 +42,6 @@ const Analysis = () => {
     }
   }, [simId]);
 
-  // If no simId and no history param, fallback to history param (e.g., new simulation)
   useEffect(() => {
     if (!simId && params.history) {
       try {
@@ -51,33 +52,40 @@ const Analysis = () => {
     }
   }, [simId, params.history]);
 
-  // Prepare chart data
   const labels = history.map(item =>
     new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   );
   const vaccineData = history.map(item => Number(item.vaccine));
   const virusData = history.map(item => Number(item.virus));
 
-  const saveSimulation = async () => {
-    const user = auth.currentUser;
-    if (!user) {
-      Alert.alert('Error', 'User not authenticated.');
-      return;
-    }
+  
+const saveSimulation = async () => {
+  if (saved) {
+    Alert.alert('Already Saved', 'This simulation has already been saved.');
+    return;
+  }
 
-    try {
-      await addDoc(collection(db, 'simulations'), {
-        uid: user.uid,
-        timestamp: serverTimestamp(),
-        history: history,
-      });
+  const user = auth.currentUser;
+  if (!user) {
+    Alert.alert('Error', 'User not authenticated.');
+    return;
+  }
 
-      Alert.alert('Success', 'Simulation saved successfully!');
-    } catch (error) {
-      console.error('Error saving simulation:', error);
-      Alert.alert('Error', 'Could not save simulation.');
-    }
-  };
+  try {
+    await addDoc(collection(db, 'simulations'), {
+      uid: user.uid,
+      timestamp: serverTimestamp(),
+      history: history,
+    });
+
+    setSaved(true);
+    Alert.alert('Success', 'Simulation saved successfully!');
+  } catch (error) {
+    console.error('Error saving simulation:', error);
+    Alert.alert('Error', 'Could not save simulation.');
+  }
+};
+
 
   if (loading) {
     return (
@@ -139,7 +147,13 @@ const Analysis = () => {
         </View>
       </View>
 
-      <Button title="Save This Simulation" onPress={saveSimulation} />
+      
+<Button
+  title={saved ? "Simulation Saved" : "Save This Simulation"}
+  onPress={saveSimulation}
+  disabled={saved}
+/>
+
     </View>
   );
 };

@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../services/config";
 
+import { LogBox } from 'react-native';
+
+LogBox.ignoreAllLogs();
 export default function TabsLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 

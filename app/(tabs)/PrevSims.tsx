@@ -1,6 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { db, auth } from '../../services/config';  // adjust path as needed
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
+import { db, auth } from '../../services/config';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 
@@ -17,46 +24,47 @@ export default function PrevSims() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    async function fetchSimulations() {
-      try {
-        const currentUser = auth.currentUser;
-        console.log('Current user:', currentUser);
-        if (!currentUser) {
-          setSimulations([]);
-          setLoading(false);
-          return;
-        }
-
-        // Query simulations where userId == current user's uid
-        const q = query(
-          collection(db, 'simulations'),
-          where('uid', '==', currentUser.uid),
-          orderBy('timestamp', 'desc')
-        );
-
-        const querySnapshot = await getDocs(q);
-        console.log('Query snapshot size:', querySnapshot.size);
-        const sims: Simulation[] = [];
-        querySnapshot.forEach(doc => {
-          console.log('Doc data:', doc.data());
-          sims.push({
-            id: doc.id,
-            ...(doc.data() as Omit<Simulation, 'id'>),
-          });
-        });
-        setSimulations(sims);
-      } catch (e) {
-        console.error('Error fetching simulations:', e);
-      } finally {
+  const fetchSimulations = useCallback(async () => {
+    setLoading(true);
+    try {
+      const currentUser = auth.currentUser;
+      console.log('Current user:', currentUser);
+      if (!currentUser) {
+        setSimulations([]);
         setLoading(false);
+        return;
       }
+
+      const q = query(
+        collection(db, 'simulations'),
+        where('uid', '==', currentUser.uid),
+        orderBy('timestamp', 'desc')
+      );
+
+      const querySnapshot = await getDocs(q);
+      console.log('Query snapshot size:', querySnapshot.size);
+      const sims: Simulation[] = [];
+      querySnapshot.forEach(doc => {
+        console.log('Doc data:', doc.data());
+        sims.push({
+          id: doc.id,
+          ...(doc.data() as Omit<Simulation, 'id'>),
+        });
+      });
+      setSimulations(sims);
+    } catch (e) {
+console.clear();
+    } finally {
+      setLoading(false);
     }
-    fetchSimulations();
   }, []);
 
+  useEffect(() => {
+    fetchSimulations();
+  }, [fetchSimulations]);
+
   function formatTimestamp(timestamp: any) {
-    if (!timestamp) return 'Unknown date';
+    if (!timestamp) return 'Simulation';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleString();
   }
@@ -76,6 +84,9 @@ export default function PrevSims() {
     return (
       <View style={styles.center}>
         <Text>No previous simulations found.</Text>
+        <TouchableOpacity style={styles.refreshButton} onPress={fetchSimulations}>
+          <Text style={styles.refreshText}>Refresh</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -85,6 +96,11 @@ export default function PrevSims() {
       data={simulations}
       keyExtractor={(item) => item.id}
       contentContainerStyle={{ padding: 20 }}
+      ListHeaderComponent={
+        <TouchableOpacity style={styles.refreshButton} onPress={fetchSimulations}>
+          <Text style={styles.refreshText}>Refresh</Text>
+        </TouchableOpacity>
+      }
       renderItem={({ item }) => (
         <TouchableOpacity style={styles.item} onPress={() => handlePress(item)}>
           <Text style={styles.dateText}>{formatTimestamp(item.timestamp)}</Text>
@@ -104,5 +120,16 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 16,
+  },
+  refreshButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    marginBottom: 20,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  refreshText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
